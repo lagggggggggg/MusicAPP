@@ -1,6 +1,9 @@
 <template>
   <div class="singer">
-    <list-view :data="singerList"></list-view>
+    <list-view :data="singerList" @select="selectSinger"></list-view>
+    <transition name="slide">
+      <router-view></router-view>
+    </transition>
   </div>
 </template>
 
@@ -9,6 +12,7 @@ import {getSingerList} from '../../api/singer'
 import { ERR_OK } from '../../api/config'
 import Singer from '../../common/js/singer'
 import ListView from '../../base/listview/ListView'
+import {mapMutations} from 'vuex'
 
 const HOT_NAME = '热门'
 const HOT_SINGER_LEN = 10
@@ -68,6 +72,15 @@ export default {
       })
        return hot.concat(ret) 
     },
+    selectSinger(singer){
+      this.$router.push({
+        path:`singer/${singer.id}`
+      })
+      this.setSinger(singer)
+    },
+    ...mapMutations({
+      setSinger:'SET_SINGER'
+    })
   },
 }
 </script>
@@ -78,4 +91,8 @@ export default {
     top: 88px
     bottom: 0
     width: 100%
+    .slide-enter-active, .slide-leave-active
+      transition: all 0.3s
+    .slide-enter,  .slide-leave-to  
+      transform: translate3d(100%, 0, 0)
 </style>

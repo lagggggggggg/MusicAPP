@@ -7,6 +7,7 @@ import fastclick from 'fastclick'
 import 'common/stylus/index.styl'
 import router from './router/index'
 import VueLazyload from 'vue-lazyload'
+import store from './store/index'
 
 Vue.use(VueLazyload,{
   loading:require('./common/image/logo.png')
@@ -17,5 +18,6 @@ Vue.config.productionTip = false
 new Vue({
   el: '#app',
   render: h => h(App),
-  router
+  router,
+  store
 })

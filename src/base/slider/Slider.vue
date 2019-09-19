@@ -11,7 +11,7 @@
 </template>
 
 <script type="text/ecmascript-6">
-  import {addClass, addClassName} from '../../common/js/dom'
+  import {addClassName} from '../../common/js/dom'
   import BScroll from 'better-scroll'
 
   export default {
