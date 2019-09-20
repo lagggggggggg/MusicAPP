@@ -16,7 +16,7 @@
        <div class="bg-layer" ref="layer"></div>
        <scroll class="list" :data="songs" ref="list"  @scroll="scroll" :probe-type="probeType" :listen-scroll="listenScroll">
          <div class="song-list-wrapper">
-           <song-list :songs="songs"></song-list>
+           <song-list :songs="songs" @select="selectItem"></song-list>
          </div>
         <div class="loading-container" v-show="!songs.length">
            <loading></loading>
@@ -32,7 +32,7 @@ import Scroll from "../../base/scroll/Scroll";
 import SongList from "../../base/song-list/SongList";
 import { prefixStyle } from "../../common/js/dom.js";
 import Loading from "../../base/loading/Loading";
-import { mapActions } from "vuex";
+import { mapActions,mapMutations } from "vuex";
 
 
 const RESERVED_HEIGHT = 40;
@@ -85,7 +85,13 @@ export default {
     scroll(pos) {
       this.scrollY = pos.y;
     },
-    ...mapActions(["selectPlay", "randomPlay"])
+    selectItem(item,index){
+      this.selectPlay({
+        list:this.songs.slice(),
+        index:index
+      })
+    },
+    ...mapActions(['selectPlay'])
   },
   watch: {
     scrollY(newY) {

@@ -1,7 +1,7 @@
 <template>
-    <div class="container">
-      <music-list :songs="songs" :title="title" :bgImage="bgImage"></music-list>
-    </div>
+  <div class="container">
+    <music-list :songs="songs" :title="title" :bgImage="bgImage"></music-list>
+  </div>
 </template>
 
 <script>
@@ -24,6 +24,10 @@ export default {
     bgImage(){
       return this.singer.avatar
     },
+    singerID(){
+       let id = this.singer.id
+       return id
+    },
     ...mapGetters([
       'singer'
     ])
@@ -36,13 +40,13 @@ export default {
   },
   methods:{
     _getSingerDetail(){
-      if(!this.singer.id){
+      if(!this.singerID){
         this.$router.push({
           path:'/singer'
         })
         return 
       }
-      getSingerDetail(this.singer.id).then(res=>{
+      getSingerDetail(this.singerID).then(res=>{
         if(res.code === ERR_OK){
           this.songs = this._normalizeSongs(res.data.list)
         }
@@ -71,4 +75,5 @@ export default {
 
 <style lang="stylus" scoped>
 @import '~common/stylus/variable'
+
 </style>
