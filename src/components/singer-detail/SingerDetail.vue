@@ -53,9 +53,11 @@ export default {
       })
     },
     _normalizeSongs(list) {
-      const ret = [] 
+      let ret = [] 
       list.forEach(item => {
-        const { musicData } = item 
+        let musicData={}
+        musicData = item.musicData
+        musicData.index = item.index
         if (isValidMusic(musicData)) {
           getMusic(musicData.songmid).then(res => {
             if (res.code === ERR_OK) {
@@ -63,11 +65,17 @@ export default {
               const songVkey = svkey[0].vkey
               const newSong = createSong(musicData, songVkey)
               ret.push(newSong)
+              this._sortArr(ret)
             }
           })
         }
       })
       return ret
+    },
+    _sortArr(arr){
+      return arr.sort((a,b)=>{
+        return a.index - b.index
+      })
     }
   }
 }
