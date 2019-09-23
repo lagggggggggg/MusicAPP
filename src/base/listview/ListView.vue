@@ -111,6 +111,9 @@ export default {
     Loading
   },
   methods:{
+    refresh(){
+      this.$refs.scroll.refresh()
+    },
     onSelect(item){
       this.$emit('select', item)
     },

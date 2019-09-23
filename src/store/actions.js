@@ -31,3 +31,37 @@ export const randomPlay = function ({ commit } ,{ list }) {
   commit(types.SET_FULL_SCREEN, true);
   commit(types.SET_PLAYING_STATE, true);
 }
+
+export const insertSong = function ({commit , state}, song){
+  let playlist = state.playlist.slice()
+  let currentIndex = state.currentIndex
+  let sequenceList = state.sequenceList.slice()
+  let currentSong = state.playlist[currentIndex]
+  let fpIndex = findIndex(playlist,song)
+  currentIndex++
+  playlist.splice(currentIndex,0,song)
+  if(fpIndex>-1){
+    if(currentIndex > fpIndex ){
+      playlist.splice(fpIndex,1)
+      currentIndex--
+    }else{
+      playlist.splice(fpIndex+1,1)
+    }
+  }
+  let currentsIndex = sequenceList[currentSong]
+  let fspIndex = findIndex(sequenceList,song)+1
+  sequenceList.splice(currentsIndex,0,song)
+  if(fspIndex>-1){
+    if(currentsIndex > fspIndex){
+      sequenceList.splice(fspIndex,1)
+    }else{
+      sequenceList.splice(fspIndex+1,1)
+    }
+  }
+
+  commit(types.SET_PLAYLIST,playlist)
+  commit(types.SET_SEQUENCE_LIST, sequenceList)
+  commit(types.SET_CURRENT_INDEX, currentIndex)
+  commit(types.SET_FULL_SCREEN, true);
+  commit(types.SET_PLAYING_STATE, true);
+}

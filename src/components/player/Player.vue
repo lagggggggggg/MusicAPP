@@ -19,6 +19,9 @@
                 <img class="image" :src="currentSong.image">
               </div> 
             </div>
+            <div class="playing-lyric-wrapper">
+              <div class="playing-lyric">{{playingLyric}}</div>
+            </div>
           </div>
           <scroll 
             v-show="currentShow==='lyric'" 
@@ -48,7 +51,7 @@
           <div class="progress-wrapper">
             <span class="time time-l">{{format(currentTime)}}</span>
             <div class="progress-bar-wrapper">
-              <progress-bar :percent="percent" @percentChange='precentChange'></progress-bar>
+              <progress-bar :percent="percent" @percentChange='percentChange'></progress-bar>
             </div>
             <span class="time time-r">{{format(currentSong.duration)}}</span>
           </div>
@@ -96,7 +99,7 @@
       @canplay="ready" 
       @error="error" 
       @timeupdate="updateTime"
-      @ended="end"
+      @ended="end"	
     ></audio>
   </div>
 </template>
@@ -116,6 +119,7 @@ import Lyric from 'lyric-parser'
 import Scroll from '../../base/scroll/Scroll'
 
 export default {
+
   data() {
     return {
       songReady:false,
@@ -123,7 +127,8 @@ export default {
       radius:32,
       currentLyric:null,
       currentLineNum: null,
-      currentShow:'cd'
+      currentShow:'cd',
+      playingLyric:'',
     };
   },
   components: {
@@ -136,10 +141,13 @@ export default {
       if(newSong.id===oldSong.id){
         return 
       }
-      this.$nextTick(()=>{
+      if(this.currentLyric){
+        this.currentLyric.stop()
+      }
+      setTimeout(()=>{
         this.$refs.audio.play()
         this.getLyric()
-      })
+      },1000)
     },
     playing(){
       this.$nextTick(()=>{
@@ -187,19 +195,26 @@ export default {
       if(!this.songReady){
         return 
       }
+      if(this.currentLyric){
+        this.currentLyric.togglePlay()
+      }
       this.setPlayingState(!this.playing)
     },
     prev(){
       if(!this.songReady){
         return 
       }
-      let index = this.currentIndex - 1
-      if(index<0){
-        index = this.playlist.length - 1
-      }
-      this.setCurrentIndex(index)
-      if(!this.playing){
-        this.togglePlay()
+      if(this.playlist.length === 1){
+        this.loop()
+      }else{
+       let index = this.currentIndex - 1
+        if(index<0){
+          index = this.playlist.length - 1
+        }
+        this.setCurrentIndex(index)
+        if(!this.playing){
+          this.togglePlay()
+        } 
       }
       this.songReady = false
     },
@@ -207,13 +222,17 @@ export default {
       if(!this.songReady){
         return 
       }
-      let index = this.currentIndex + 1
-      if(index===this.playlist.length){
-        index = 0
-      }
-      this.setCurrentIndex(index)
-      if(!this.playing){
-        this.togglePlay()
+      if(this.playlist.length === 1 ){
+        this.loop()
+      }else{
+        let index = this.currentIndex + 1
+        if(index===this.playlist.length){
+          index = 0
+        }
+        this.setCurrentIndex(index)
+        if(!this.playing){
+          this.togglePlay()
+        }
       }
       this.songReady = false
     },
@@ -230,6 +249,9 @@ export default {
     loop(){
       this.$refs.audio.currentTime = 0
       this.$refs.audio.play()
+      if(this.currentLyric){
+        this.currentLyric.seek(0)
+      }
     },
     error(){
       this.songReady = true
@@ -242,10 +264,14 @@ export default {
       let sec = this._pad(Math.floor(time%60))
       return `${min}:${sec}`
     },
-    precentChange(percent){
-      this.$refs.audio.currentTime = this.currentSong.duration*percent 
+    percentChange(percent){
+      let time = this.currentSong.duration*percent 
+      this.$refs.audio.currentTime = time
       if(!this.playing){
         this.togglePlay()
+      }
+      if(this.currentLyric){
+        this.currentLyric.seek(time*1000)
       }
     },
     changeMode(){
@@ -273,6 +299,10 @@ export default {
         if(this.playing){
           this.currentLyric.play()
         }
+      }).catch(()=>{
+        this.currentLyric = null
+        this.playingLyric = ''
+        this.currentLineNum = 0
       })
     },
     handleLyric({lineNum,txt}){
@@ -283,6 +313,7 @@ export default {
       }else{
         this.$refs.lyricList.scrollTo(0,0,1000)
       }
+      this.playingLyric = txt
     },
     showLyric(){
       this.currentShow='lyric'

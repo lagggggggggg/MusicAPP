@@ -39,7 +39,7 @@ export function createSong(musicData, songVkey) {
     singer: filterSinger(musicData.singer),
     name: musicData.songname,
     album: musicData.albumname,
-    duration: musicData.interval, // 歌曲时长s
+    duration: musicData.interval,
     image: `https://y.gtimg.cn/music/photo_new/T002R300x300M000${musicData.albummid}.jpg?max_age=2592000`,
     url: `http://ws.stream.qqmusic.qq.com/C400${musicData.songmid}.m4a?vkey=${songVkey}&guid=6319873028&uin=0&fromtag=66`
   })
@@ -58,8 +58,22 @@ function filterSinger(singer) {
 
 export function isValidMusic(musicData) {
   return (
-    musicData.songid &&
-    musicData.albummid &&
-    (!musicData.pay || musicData.pay.payplay === 0)
+    (musicData.songid || musicData.id) &&
+    (musicData.albummid || musicData.album) &&
+    (musicData.pay.pay_play === 0 || musicData.pay.payplay === 0)
   );
+}
+
+export function createSongList(musicData, songVkey) {
+  return new Song({
+    index:musicData.index,
+    id: musicData.id,
+    mid: musicData.mid,
+    singer: filterSinger(musicData.singer),
+    name: musicData.name,
+    album: musicData.album.name,
+    duration: musicData.interval,
+    image: `https://y.gtimg.cn/music/photo_new/T002R300x300M000${musicData.album.mid}.jpg?max_age=2592000`,
+    url: `http://ws.stream.qqmusic.qq.com/C400${musicData.mid}.m4a?vkey=${songVkey}&guid=6319873028&uin=0&fromtag=66`
+  })
 }
