@@ -29,6 +29,10 @@ export default {
     pullUpToFresh:{
       type:Boolean,
       default:false
+    },
+    beforScroll:{
+      type:Boolean,
+      default:false
     }
   },
   mounted(){
@@ -56,6 +60,11 @@ export default {
           if(this.scroll.y<=this.scroll.maxScrollY + 50){
             this.$emit('scrollToEnd')
           }
+        })
+      }
+      if(this.beforScroll){
+        this.scroll.on('beforeScrollStart',()=>{
+          this.$emit('beforeScroll')
         })
       }
     },

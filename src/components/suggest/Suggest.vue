@@ -2,9 +2,11 @@
   <scroll 
     ref="suggest"
     class="suggest" 
+    :beforeScroll="beforeScroll"
     :data="result"
     :pullUpToFresh="pullUpToFresh"
     @scrollToEnd="searchMore"
+    @beforeScroll="scrollList"
   >
     <ul class="suggest-list">
       <li class="suggest-item" v-for="(item,index) in result" :key="index" @click="selectItem(item)">
@@ -17,6 +19,9 @@
       </li>
       <loading v-show="hasMore"></loading>
     </ul>
+    <div class="no-result-wrapper" v-show="!hasMore && !result.length">
+      <no-result title="抱歉，暂无搜索结果"></no-result>
+    </div>
   </scroll>
 </template>
 
@@ -29,6 +34,7 @@ import Scroll from '../../base/scroll/Scroll'
 import Loading from '../../base/loading/Loading'
 import Singer from '../../common/js/singer'
 import { mapMutations , mapActions } from 'vuex'
+import NoResult from '../../base/no-result/NoResult'
 
 const TYPE_SINGER = 'singer'
 const prepage = 20
@@ -50,6 +56,7 @@ export default {
       result:[],
       pullUpToFresh:true,
       hasMore:true,
+      beforeScroll:true,
     }
   },
   watch:{
@@ -59,7 +66,8 @@ export default {
   },
   components:{
     Scroll,
-    Loading
+    Loading,
+    NoResult
   },
   methods:{
     search(){
@@ -68,6 +76,7 @@ export default {
       this.$refs.suggest.scrollTo(0,0)
       this.result=[]
       getSearch(this.query,this.page,this.showSinger,prepage).then(res=>{
+        console.log(res)
         if(res.code === ERR_OK){
           this._genResult(res.data).then(res=>{
             this.result = res
@@ -117,6 +126,14 @@ export default {
       }else{
         this.insertSong(item)
       }
+      this.$emit('select')
+      console.log(123)
+    },
+    scrollList(){
+      this.$emit('scrollList')
+    },
+    refresh(){
+      this.$refs.suggest.refresh()
     },
     _checkHasMore(data){
       let song = data.song
@@ -140,19 +157,17 @@ export default {
       return new Promise((resolve,reject)=>{
         let ret = []
         list.forEach((musicData,index) => {
-          if (isValidMusic(musicData)) {
-            getMusic(musicData.songmid).then(res => {
-              if (res.code === ERR_OK) {
-                const svkey = res.data.items
-                const songVkey = svkey[0].vkey
-                const newSong = createSong(musicData, songVkey)
-                ret.push(newSong)
-                if(index == list.length-1){
-                  resolve(ret)
-                }
+          getMusic(musicData.songmid).then(res => {
+            if (res.code === ERR_OK) {
+              const svkey = res.data.items
+              const songVkey = svkey[0].vkey
+              const newSong = createSong(musicData, songVkey)
+              ret.push(newSong)
+              if(index == list.length-1){
+                resolve(ret)
               }
-            })
-          }
+            }
+          })
         })
       })
     },
