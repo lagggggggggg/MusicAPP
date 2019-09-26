@@ -76,7 +76,6 @@ export default {
       this.$refs.suggest.scrollTo(0,0)
       this.result=[]
       getSearch(this.query,this.page,this.showSinger,prepage).then(res=>{
-        console.log(res)
         if(res.code === ERR_OK){
           this._genResult(res.data).then(res=>{
             this.result = res
@@ -127,7 +126,6 @@ export default {
         this.insertSong(item)
       }
       this.$emit('select')
-      console.log(123)
     },
     scrollList(){
       this.$emit('scrollList')

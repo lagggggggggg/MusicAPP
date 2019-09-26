@@ -25,7 +25,7 @@
       </scroll>
     </div>
     <div ref="searchResult" class="search-result" v-show="query.length">
-      <suggest ref="suggest" :query="query" @scrollListl="inputBlur" @select="saveSearch"></suggest>
+      <suggest ref="suggest" :query="query" @scrollList="inputBlur" @select="saveSearch"></suggest>
     </div>
     <confirm ref="confirm" text="是否清空搜索历史" confirmBtnText="清空" @confirm="clearSearchHistory"></confirm>
     <router-view></router-view>
@@ -41,15 +41,14 @@ import {mapActions,mapGetters} from 'vuex'
 import SearchList from '../../base/search-list/SearchList'
 import Confirm from '../../base/confirm/Confirm'
 import Scroll from '../../base/scroll/Scroll'
-import {playlistMixin} from '../../common/js/mixin'
+import {playlistMixin,searchMixin} from '../../common/js/mixin'
 
 export default {
   name: 'Search',
-  mixins:[playlistMixin,],
+  mixins:[playlistMixin,searchMixin],
   data(){
     return {
       hotKeys:[],
-      query:'',
     }
   },
   created(){
@@ -66,9 +65,6 @@ export default {
     shortcut(){
       return this.hotKeys.concat(this.SearchHistory)
     },
-    ...mapGetters([
-      'searchHistory'
-    ])
   },
   watch:{
     query(newQuery){
@@ -87,19 +83,6 @@ export default {
       this.$refs.shortcut.refresh()
       this.$refs.suggest.refresh()
     },
-    setQuery(query){
-      this.$refs.searchBox.setQuery(query)
-    },
-    getQuery(query){
-      this.query = query
-    },
-    inputBlur(){
-      this.$refs.searchBox.inputBlur()
-    },
-    saveSearch(){
-      console.log(123)
-      this.saveSearchHistory(this.query)
-    },
     selectOne(item){
       this.setQuery(item)
     },
@@ -114,8 +97,6 @@ export default {
       })
     },
     ...mapActions([
-      'saveSearchHistory',
-      'deletSearchHistory',
       'clearSearchHistory'
     ])
   }

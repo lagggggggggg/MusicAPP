@@ -104,7 +104,7 @@ export default {
     },
     random(){
       this.randomPlay({
-        list:this.songs,
+        list:this.songs.slice(),
       })
     },
     ...mapActions([

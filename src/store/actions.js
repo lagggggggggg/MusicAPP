@@ -1,7 +1,7 @@
 import * as types from './mutation-types'
 import {playMode} from '../common/js/config'
 import {shuffle} from '../common/js/shuffle'
-import {saveSearch, deletSearch, clearSearch} from '../common/js/cache'
+import {saveSearch, deletSearch, clearSearch , savePlayHistory} from '../common/js/cache'
 
 const findIndex = function (arr,song) {
   return arr.findIndex((item)=>{
@@ -49,8 +49,8 @@ export const insertSong = function ({commit , state}, song){
       playlist.splice(fpIndex+1,1)
     }
   }
-  let currentsIndex = sequenceList[currentSong]
-  let fspIndex = findIndex(sequenceList,song)+1
+  let currentsIndex = findIndex(sequenceList,currentSong)+1
+  let fspIndex = findIndex(sequenceList,song)
   sequenceList.splice(currentsIndex,0,song)
   if(fspIndex>-1){
     if(currentsIndex > fspIndex){
@@ -77,4 +77,41 @@ export const deletSearchHistory = function({commit},query){
 
 export const clearSearchHistory = function ({commit}){
   commit(types.SET_SEARCH_HISTORY, clearSearch())
+}
+
+export const deletSong = function ({commit,state},song){
+  let playlist = state.playlist.slice()
+  let currentIndex = state.currentIndex
+  let sequenceList = state.sequenceList.slice()
+  
+  let pIndex = findIndex(playlist,song)
+  playlist.splice(pIndex,1)
+  
+  let sIndex = findIndex(sequenceList,song)
+  sequenceList.splice(sIndex,1)
+  
+  if (currentIndex > pIndex || currentIndex == playlist.length){
+    currentIndex --
+  }
+  
+  commit(types.SET_PLAYLIST, playlist)
+  commit(types.SET_SEQUENCE_LIST, sequenceList)
+  commit(types.SET_CURRENT_INDEX, currentIndex)
+
+  if(!playlist.length){
+    commit(types.SET_PLAYING_STATE, false)
+  }else{
+    commit(types.SET_PLAYING_STATE, true)
+  }
+}
+
+export const clearSongList = function ({commit}){
+  commit(types.SET_PLAYLIST, [])
+  commit(types.SET_SEQUENCE_LIST, [])
+  commit(types.SET_CURRENT_INDEX , -1)
+  commit(types.SET_PLAYING_STATE , false)
+}
+
+export const setPlayHistory = function ({commit},song){
+  commit(types.SET_PLAY_HISTORY, savePlayHistory(song))
 }

@@ -89,11 +89,12 @@
             <i @click.stop="togglePlay" class="icon-mini" :class="miniIcon"></i>
           </progress-circle>
         </div>
-        <div class="control">
+        <div class="control" @click.stop="showPlaylist">
           <i class="icon-playlist"></i>
         </div>
       </div>
     </transition>
+    <playlist ref="playlist"></playlist>
      <audio ref="audio" 
       :src="currentSong.url" 
       @canplay="ready" 
@@ -110,6 +111,7 @@
 import { 
   mapGetters ,
   mapMutations ,
+  mapActions,
 } from 'vuex'
 import ProgressBar from '../../base/progress-bar/ProgressBar'
 import ProgressCircle from '../../base/progress-circle/ProgressCircle'
@@ -117,9 +119,11 @@ import {playMode} from '../../common/js/config'
 import {shuffle} from '../../common/js/shuffle'
 import Lyric from 'lyric-parser'
 import Scroll from '../../base/scroll/Scroll'
+import Playlist from '../playlist/Playlist'
+import {playerMixin} from '../../common/js/mixin'
 
 export default {
-
+  mixins:[playerMixin],
   data() {
     return {
       songReady:false,
@@ -134,10 +138,14 @@ export default {
   components: {
     ProgressBar,
     ProgressCircle,
-    Scroll
+    Scroll,
+    Playlist
   },
   watch:{
     currentSong(newSong,oldSong){
+      if(!newSong.id){
+        return 
+      }
       if(newSong.id===oldSong.id){
         return 
       }
@@ -159,9 +167,6 @@ export default {
     playIcon(){
       return this.playing?'icon-pause':'icon-play'
     },
-    iconMode(){
-      return this.mode === playMode.sequence? 'icon-sequence':this.mode=== playMode.loop? 'icon-loop' : 'icon-random'
-    },
     miniIcon(){
       return this.playing?'icon-pause-mini':'icon-play-mini'
     },
@@ -176,12 +181,8 @@ export default {
     },
     ...mapGetters([
       'fullScreen',
-      'playlist',
-      'currentSong',
       'playing',
       'currentIndex',
-      'mode',
-      'sequenceList'
     ])
   },
   methods:{
@@ -238,6 +239,7 @@ export default {
     },
     ready(){
       this.songReady = true
+      this.setPlayHistory(this.currentSong)
     },
     end(){
       if(this.mode === playMode.loop){
@@ -274,25 +276,6 @@ export default {
         this.currentLyric.seek(time*1000)
       }
     },
-    changeMode(){
-      let mode =(this.mode+1)%3
-      this.setPlayMode(mode)
-      let list =[]
-      if(mode===playMode.random){
-        list = shuffle(this.sequenceList)
-      }else{
-        list = this.sequenceList
-      }
-      this.resetCurrentIndex(list)
-      this.setPlayList(list)
-      
-    },
-    resetCurrentIndex(list){
-      let index = list.findIndex((item)=>{
-        return item.id === this.currentSong.id
-      })
-      this.setCurrentIndex(index)
-    },
     getLyric(){
       this.currentSong.getLyric().then(res=>{
         this.currentLyric = new Lyric(res,this.handleLyric)
@@ -321,6 +304,9 @@ export default {
     showCD(){
       this.currentShow='cd'
     },
+    showPlaylist(){
+      this.$refs.playlist.show()
+    },
     _pad(num,n=2){
       let len = num.toString().length
       if(len<n){
@@ -331,11 +317,10 @@ export default {
     },
     ...mapMutations({
       setFullScreen:'SET_FULL_SCREEN',
-      setPlayingState:'SET_PLAYING_STATE',
-      setCurrentIndex : 'SET_CURRENT_INDEX',
-      setPlayMode : 'SET_PLAY_MODE',
-      setPlayList:'SET_PLAYLIST'
-    })
+    }),
+    ...mapActions([
+      'setPlayHistory'
+    ])
   }
 };
 </script>
